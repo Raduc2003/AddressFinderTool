@@ -6,8 +6,8 @@ def main():
     # url = 'https://mycasting.ro'  edge case: romanian address
     # url = 'https://yendis.co.uk' edge case:  just : Birmingham, UK
     # url = 'https://southamptoncruisecentre.com' many addresses
-
-    url = 'https://www.aiwoodwork.com' 
+    # url = 'https://katerisyracuse.com' photo address
+    url = 'https://katerisyracuse.com' 
     addresses = find_address_list(url)
     # Remove duplicates
     addresses = list(set(addresses))

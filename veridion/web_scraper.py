@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-
+import os
 def get_sitemap_urls(url):
     sitemap_locations = [
         'sitemap.xml', 'sitemap_index.xml', 'sitemap/sitemap.xml', 'sitemap/sitemap_index.xml', 
@@ -84,3 +84,42 @@ def extract_text_from_html(url):
     # Extract all text from the HTML
     text = soup.get_text(separator=' ')
     return text
+
+
+def get_images_from_webpage(url, download_folder='images'):
+    # Send a GET request to the URL
+    response = requests.get(url)
+    
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    # Find all image tags
+    img_tags = soup.find_all('img')
+    
+    # Create a folder to save the images if it doesn't exist
+    if not os.path.exists(download_folder):
+        os.makedirs(download_folder)
+    
+    # Download and save each image with sequential naming
+    for idx, img_tag in enumerate(img_tags, start=1):
+        img_url = img_tag.get('src')
+        if img_url:
+            try:
+                # Handle relative URLs
+                if not img_url.startswith(('http://', 'https://')):
+                    img_url = requests.compat.urljoin(url, img_url)
+                
+                # Get the image content
+                img_response = requests.get(img_url)
+                
+                # Create the image file name
+                img_name = os.path.join(download_folder, f'{idx}.jpg')
+                
+                # Save the image
+                with open(img_name, 'wb') as img_file:
+                    img_file.write(img_response.content)
+                
+                print(f'Successfully downloaded {img_name}')
+            except Exception as e:
+                print(f'Failed to download {img_url}: {e}')
+
