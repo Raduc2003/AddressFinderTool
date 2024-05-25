@@ -1,6 +1,8 @@
 from geopy.geocoders import Nominatim
 from itertools import combinations
 
+
+# TO MANY REQUESTS
 def identify_location_type(location_string):
     geolocator = Nominatim(user_agent="location_identifier")
     location = geolocator.geocode(location_string)

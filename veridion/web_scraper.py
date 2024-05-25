@@ -31,6 +31,8 @@ def get_homepage_urls(url):
     
     for a_tag in soup.find_all('a', href=True):
         href = a_tag['href']
+        # add case ends with .html or .htm
+       
         
         if href.startswith('/'):
             full_url = f"{url}{href}"
@@ -38,6 +40,10 @@ def get_homepage_urls(url):
             full_url = href
         elif href.startswith('http'):
             full_url = href
+        elif href.startswith('www'):
+            full_url = f"https://{href}"
+        elif href.endswith('.html') or href.endswith('.htm'):
+            full_url = f"{url}/{href}"
         else:
             continue
         
@@ -62,3 +68,19 @@ def get_all_pages(url):
     print(possible_pages)
     
     return list(possible_pages)
+
+def extract_text_from_html(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Check if the request was successful
+    except:
+        return ''
+    # Parse the HTML content
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Extract all text from the HTML
+    text = soup.get_text(separator=' ')
+    return text

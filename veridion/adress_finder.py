@@ -9,21 +9,8 @@ import concurrent.futures
 from urllib.request import urlopen
 
 
-def extract_text_from_html(url):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Check if the request was successful
-    except:
-        return ''
-    # Parse the HTML content
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # Extract all text from the HTML
-    text = soup.get_text(separator=' ')
-    return text
+
+
 
 def extract_address_pyap(text):
     # Use pyap to parse addresses from the text for all supported countries
@@ -41,56 +28,58 @@ def extract_address_pyap(text):
     return addresses
 
 def extract_address_regex(text):
-    
     address_patterns = [
-    # USA: 123 Main St, City, ST 12345 or 12345-6789
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2}\s\d{5}(-\d{4})?\b',
-    
-    # USA: 123 Main St, City, 12345
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s\d{5}\b',
-    
-    # UK: 123 High Street, London, W1A 1AA
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b',
-    
-    # Germany: Street Name 123, 12345 City
-    r'\b(?:[A-Z][a-z]*\s)+\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+?\b',
-    
-    # France: 123 Rue Example, 75001 Paris
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Rue|Avenue|Boulevard|Place|Allée|Chemin)\b,\s\d{5}\s[\w\s]+?\b',
-    
-    # Italy: Via Roma 123, 00100 Rome
-    r'\bVia\s(?:[A-Z][a-z]*\s)+\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+?\b',
-    
-    # Spain: Calle Example 123, 28001 Madrid
-    r'\bCalle\s(?:[A-Z][a-z]*\s)+\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+?\b',
-    
-    # Generic: Street Name, 12345 City
-    r'\b(?:[A-Z][a-z]*\s)+,\s\d{4,6}\s[\w\s]+?\b',
-    
-    # Generic: 123 Main St, City
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+?\b',
-    
-    # Romania: Strada Splaiul Unirii nr. 80-82, Etaj 1, Bucuresti
-    r'\bStrada\s(?:[A-Z][a-z]*\s)+nr\.\s\d+-\d+,\sEtaj\s\d+,\s[\w\s]+?\b',
-    
-    # General European format: 1234 AB City
-    r'\b\d{4,5}\s[A-Z]{2}\s[\w\s]+?\b',
-    
-    # Netherlands: Street Name 123, 1234 AB City
-    r'\b(?:[A-Z][a-z]*\s)+\d{1,5}[-\d]*,\s\d{4}\s[A-Z]{2}\s[\w\s]+?\b',
-    
-    # Canada: 123 Main St, Toronto, ON M1A 1A1
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2}\s[A-Z]\d[A-Z]\s?\d[A-Z]\d\b',
-    
-    # Australia: 123 Main St, Sydney, NSW 2000
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2,3}\s\d{4}\b',
-    
-    # India: 123 Main Street, Locality, City, 123456
-    r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[\w\s]+,\s\d{6}\b',
-]
-
-
-
+        # USA: 123 Main St, City, ST 12345 or 12345-6789
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2}\s\d{5}(-\d{4})?\b',
+        
+        # USA: 123 Main St, City, 12345
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s\d{5}\b',
+        
+        # UK: 123 High Street, London, W1A 1AA
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b',
+        
+        # Germany: Street Name 123, 12345 City
+        r'\b(?:[A-Z][a-z]*\s)*\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+\b',
+        
+        # France: 123 Rue Example, 75001 Paris
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Rue|Avenue|Boulevard|Place|Allée|Chemin)\b,\s\d{5}\s[\w\s]+\b',
+        
+        # Italy: Via Roma 123, 00100 Rome
+        r'\bVia\s(?:[A-Z][a-z]*\s)*\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+\b',
+        
+        # Spain: Calle Example 123, 28001 Madrid
+        r'\bCalle\s(?:[A-Z][a-z]*\s)*\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+\b',
+        
+        # Generic: Street Name, 12345 City
+        r'\b(?:[A-Z][a-z]*\s)+,\s\d{4,6}\s[\w\s]+\b',
+        
+        # Generic: 123 Main St, City
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+\b',
+        
+        # Romania: Strada Splaiul Unirii nr. 80-82, Etaj 1, Bucuresti
+        r'\bStrada\s(?:[A-Z][a-z]*\s)*nr\.\s\d+-\d+,\sEtaj\s\d+,\s[\w\s]+\b',
+        
+        # General European format: 1234 AB City
+        r'\b\d{4,5}\s[A-Z]{2}\s[\w\s]+\b',
+        
+        # Netherlands: Street Name 123, 1234 AB City
+        r'\b(?:[A-Z][a-z]*\s)*\d{1,5}[-\d]*,\s\d{4}\s[A-Z]{2}\s[\w\s]+\b',
+        
+        # Canada: 123 Main St, Toronto, ON M1A 1A1
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2}\s[A-Z]\d[A-Z]\s?\d[A-Z]\d\b',
+        
+        # Australia: 123 Main St, Sydney, NSW 2000
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[A-Z]{2,3}\s\d{4}\b',
+        
+        # India: 123 Main Street, Locality, City, 123456
+        r'\b\d{1,5}[-\d]*\s(?:[A-Z][a-z]*\s)*\b(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Square|Sq|Trail|Trl|Parkway|Pkwy|Commons|Cmns)\b,\s[\w\s]+,\s[\w\s]+,\s\d{6}\b',
+        
+        # Germany: Koppoldstr. 1, 86551 Aichach, DE-EU
+        r'\b[A-Z][a-z]*str\.\s\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+,\s[A-Z]{2}-[A-Z]{2}\b',
+        
+        # Greece: LCG Greece, Kifisias Ave. 16, 11526 Athens, GR-EU
+        r'\b[A-Z][a-z]*\s[A-Z][a-z]*,\s[A-Z][a-z]*\sAve\.\s\d{1,5}[-\d]*,\s\d{5}\s[\w\s]+,\s[A-Z]{2}-[A-Z]{2}\b',
+    ]
 
     # Compile regex patterns for better performance
     compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in address_patterns]
@@ -212,8 +201,11 @@ def process_url(url, all_addresses):
     t1 = time.time()
     text = extract_text_from_html(url)
     addresses_pyap = extract_address_pyap(text)
+    print(addresses_pyap)
     addresses_regex = extract_address_regex(text)
+    print(addresses_regex)
     addresses_regex_formatted = extract_valid_addresses(addresses_regex)
+    print(addresses_regex_formatted)
     addresses = addresses_pyap + addresses_regex_formatted
 
     for address in addresses:
@@ -238,26 +230,6 @@ def find_address_list(url):
     
     return list(all_addresses)
 
-# url = 'https://www.brunelcare.org.uk'  edge : many pages with numbers
-# url = 'https://mycasting.ro'  edge case: romanian address
-# url = 'https://yendis.co.uk' edge case:  just : Birmingham, UK
-# url = 'https://southamptoncruisecentre.com' many addresses
-url = 'https://www.brunelcare.org.uk' 
 
-addresses = find_address_list(url)
-
-# Remove duplicates
-addresses = list(set(addresses))
-
-validate_addresses = []
-for address in addresses:
-    is_valid, details = validate_address(address)
-    if is_valid:
-        validate_addresses.append((address))
-
-
-
-print(addresses)
-print(validate_addresses)
 
 
