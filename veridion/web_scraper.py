@@ -106,7 +106,7 @@ def get_all_pages(url):
     possible_pages.update(homepage_urls)
 
     print(f"Found {len(possible_pages)} possible pages")
-    print(possible_pages)
+    # print(possible_pages)
 
     
     return list(possible_pages)

@@ -189,21 +189,21 @@ def process_url(url, all_addresses):
     t1 = time.time()
     text = extract_text_from_html(url)
     addresses_pyap = extract_address_pyap(text)
-    print("PYAP",addresses_pyap)
+    # print("PYAP",addresses_pyap)
     addresses_regex = extract_address_regex(text)
-    print("REGEX",addresses_regex)
+    # print("REGEX",addresses_regex)
 
     addresses_pyap_formatted = extract_valid_addresses(addresses_pyap)
-    print("FORMATED pyap",addresses_pyap_formatted)
+    # print("FORMATED pyap",addresses_pyap_formatted)
     addresses_regex_formatted = extract_valid_addresses(addresses_regex)
-    print("FORMATED regex",addresses_regex_formatted)
+    # print("FORMATED regex",addresses_regex_formatted)
     addresses = addresses_pyap_formatted + addresses_regex_formatted
 
     for address in addresses:
         add_address(all_addresses, address)
     
     t2 = time.time()
-    print(f"Time for processing {url}: {t2 - t1} seconds")
+    # print(f"Time for processing {url}: {t2 - t1} seconds")
 
 def find_address_list(url):
     all_addresses = set()

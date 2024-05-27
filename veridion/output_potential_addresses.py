@@ -1,6 +1,6 @@
 import csv
 
-def output_potential_addresses(addresses, url, filename='addresses.csv'):
+def output_potential_addresses(addresses, url, filename='potential_addresses.csv'):
     
     with open(filename, mode='a', newline='') as file:
         writer = csv.writer(file)
