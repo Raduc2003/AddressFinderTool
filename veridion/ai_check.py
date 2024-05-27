@@ -15,7 +15,7 @@ text = ["4014 Tanglewood Trail, Chesapeake, VA 23325", "2555 or email us","5555 
 def ai_check(addresses):
     addresses_string = list_to_string(addresses)
     url = "http://127.0.0.1:1337"
-    url2 = "http://123123:1133"
+    url2 = "http://74.234.241.218:33337"
     header = {
         "Content-Type": "application/json"
     }
@@ -68,7 +68,7 @@ def ai_check(addresses):
         print(f"Request failed with status code: {response.status_code}")
     return string_to_list(resp)
 
-text2 =ai_check(text)
-print(text2)
+# text2 =ai_check(text)
+# print(text2)
 
     

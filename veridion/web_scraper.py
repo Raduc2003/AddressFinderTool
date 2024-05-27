@@ -1,38 +1,79 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+import requests
+from bs4 import BeautifulSoup
+import time
+
 def get_sitemap_urls(url):
+ 
     sitemap_locations = [
-        'sitemap.xml', 'sitemap_index.xml', 'sitemap/sitemap.xml', 'sitemap/sitemap_index.xml', 
+        'sitemap.xml', 'sitemap_index.xml', 'sitemap/sitemap.xml', 'sitemap/sitemap_index.xml',
         'sitemap.xml.gz', 'sitemap_index.xml.gz', 'sitemap/sitemap.xml.gz', 'sitemap/sitemap_index.xml.gz'
     ]
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    
+
+    # First try the base URL
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            return []
+    except requests.exceptions.Timeout:
+        print(f"Connection timed out while fetching the base URL: {url}")
+        return []
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while fetching the base URL: {url}: {e}")
+        return []
+
+    # If the base URL is reachable, proceed with sitemap locations
     for location in sitemap_locations:
-        response = requests.get(f"{url}/{location}", headers=headers)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            return [loc.text for loc in soup.find_all('loc')]
+        try:
+            response = requests.get(f"{url}/{location}", headers=headers, timeout=10)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                return [loc.text for loc in soup.find_all('loc')]
+            elif response.status_code == 403:
+                print(f"Access forbidden (403) for {url}/{location}")
+                break  # Stop trying this location if access is forbidden
+            else:
+                print(f"Failed to fetch sitemap from {url}/{location} - Status code: {response.status_code}")
+        except requests.exceptions.Timeout:
+            print(f"Connection timed out while fetching {url}/{location}")
+            break  # Exit the loop if there is a connection timeout
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while fetching {url}/{location}: {e}")
+            break  # Exit the loop if there is any other request exception
     
     return []
+
 
 def get_homepage_urls(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
+
+    # First try the base URL
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            return set()
+    except requests.exceptions.Timeout:
+        print(f"Connection timed out while fetching the base URL: {url}")
+        return set()
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while fetching the base URL: {url}: {e}")
         return set()
 
+    # If the base URL is reachable, proceed with extracting URLs
     soup = BeautifulSoup(response.text, 'html.parser')
     urls = set()
-    
+
     for a_tag in soup.find_all('a', href=True):
         href = a_tag['href']
-        # add case ends with .html or .htm
-       
         
         if href.startswith('/'):
             full_url = f"{url}{href}"
@@ -66,18 +107,27 @@ def get_all_pages(url):
 
     print(f"Found {len(possible_pages)} possible pages")
     print(possible_pages)
+
     
     return list(possible_pages)
 
 def extract_text_from_html(url):
+ 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
+
+    # First try the base URL
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()  # Check if the request was successful
-    except:
+    except requests.exceptions.Timeout:
+        print(f"Connection timed out while fetching the URL: {url}")
         return ''
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while fetching the URL: {url}: {e}")
+        return ''
+
     # Parse the HTML content
     soup = BeautifulSoup(response.text, 'html.parser')
     
