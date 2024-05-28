@@ -28,6 +28,7 @@ def main(url, real=True, photo=False, ai_chk=False):
         
         # Output real locations to a CSV file
         output_real_locations(validate_addresses, url)
+        log_status(url, validate_addresses)
 
     if photo:
         process_text_from_images(url, addresses)
@@ -51,7 +52,6 @@ def get_websites_from_file(parquet_file_path):
         print(f"An error occurred: {e}")
         return []
 
-# Example usage
 urls = get_websites_from_file('veridion/data.snappy.parquet')
 # urls = ['https://www.andersrice.com']
 

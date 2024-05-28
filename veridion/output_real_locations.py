@@ -1,8 +1,7 @@
 import csv
 
 def output_real_locations(real_locations, url, filename='real_addresses.csv'):
-   
-    with open(filename, mode='a', newline='') as file:
+    with open(filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         
         # Writing validated addresses

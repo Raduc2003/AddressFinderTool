@@ -1,8 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-import requests
-from bs4 import BeautifulSoup
+from logs import *
 import time
 
 def get_sitemap_urls(url):
@@ -19,13 +18,16 @@ def get_sitemap_urls(url):
     try:
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code != 200:
-            print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            # print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            log_error_from_fetch(url)
             return []
     except requests.exceptions.Timeout:
-        print(f"Connection timed out while fetching the base URL: {url}")
+        # print(f"Connection timed out while fetching the base URL: {url}")
+        log_error_from_fetch(url)
         return []
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred while fetching the base URL: {url}: {e}")
+        # print(f"An error occurred while fetching the base URL: {url}: {e}")
+        log_error_from_fetch(url)
         return []
 
     # If the base URL is reachable, proceed with sitemap locations
@@ -36,15 +38,19 @@ def get_sitemap_urls(url):
                 soup = BeautifulSoup(response.text, 'html.parser')
                 return [loc.text for loc in soup.find_all('loc')]
             elif response.status_code == 403:
-                print(f"Access forbidden (403) for {url}/{location}")
+                # print(f"Access forbidden (403) for {url}/{location}")
+                log_error_from_fetch(url)
                 break  # Stop trying this location if access is forbidden
             else:
-                print(f"Failed to fetch sitemap from {url}/{location} - Status code: {response.status_code}")
+                # print(f"Failed to fetch sitemap from {url}/{location} - Status code: {response.status_code}")
+                log_error_from_fetch(url)
         except requests.exceptions.Timeout:
-            print(f"Connection timed out while fetching {url}/{location}")
+            # print(f"Connection timed out while fetching {url}/{location}")
+            log_error_from_fetch(url)
             break  # Exit the loop if there is a connection timeout
         except requests.exceptions.RequestException as e:
-            print(f"An error occurred while fetching {url}/{location}: {e}")
+            # print(f"An error occurred while fetching {url}/{location}: {e}")
+            log_error_from_fetch(url)
             break  # Exit the loop if there is any other request exception
     
     return []
@@ -59,13 +65,16 @@ def get_homepage_urls(url):
     try:
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code != 200:
-            print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            # print(f"Failed to fetch the base URL: {url} - Status code: {response.status_code}")
+            log_error_from_fetch(url)
             return set()
     except requests.exceptions.Timeout:
-        print(f"Connection timed out while fetching the base URL: {url}")
+        # print(f"Connection timed out while fetching the base URL: {url}")
+        log_error_from_fetch(url)
         return set()
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred while fetching the base URL: {url}: {e}")
+        # print(f"An error occurred while fetching the base URL: {url}: {e}")
+        log_error_from_fetch(url)
         return set()
 
     # If the base URL is reachable, proceed with extracting URLs
@@ -122,10 +131,12 @@ def extract_text_from_html(url):
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()  # Check if the request was successful
     except requests.exceptions.Timeout:
-        print(f"Connection timed out while fetching the URL: {url}")
+        # print(f"Connection timed out while fetching the URL: {url}")
+        log_error_from_fetch(url)
         return ''
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred while fetching the URL: {url}: {e}")
+        # print(f"An error occurred while fetching the URL: {url}: {e}")
+        log_error_from_fetch(url)
         return ''
 
     # Parse the HTML content
